@@ -21,10 +21,13 @@ def solve_naive(instance: Instance) -> Solution:
     )
 
 
-SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
-    "naive": solve_naive
-}
+def solve(instance: Instance) -> Solution:
+    return "hi"
 
+SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
+    "naive": solve_naive,
+    "actual": solve,
+}
 
 # You shouldn't need to modify anything below this line.
 def infile(args):
