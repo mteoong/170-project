@@ -23,6 +23,11 @@ def solve_naive(instance: Instance) -> Solution:
 
 def solve(instance: Instance) -> Solution:
     return "hi"
+    #parsing possible locations
+
+    #three for loops to generate all possible tower placements
+
+    #run LP on all the possible solution sets.
 
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive,

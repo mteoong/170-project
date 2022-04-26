@@ -59,14 +59,7 @@ class Solution:
         return penalty
 
 
-    def __init__(instance, towers):
-        #parse through all cities and get all possible values
 
-        #get every possible setting of the towers using three for loops
-        #number of towers and tower location loops
-
-
-        
 
     @staticmethod
     def parse(lines: Iterable[str], instance: Instance):
