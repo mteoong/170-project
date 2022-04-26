@@ -58,6 +58,16 @@ class Solution:
             penalty += 170 * math.exp(0.17 * num_overlaps)
         return penalty
 
+
+    def __init__(instance, towers):
+        #parse through all cities and get all possible values
+
+        #get every possible setting of the towers using three for loops
+        #number of towers and tower location loops
+
+
+        
+
     @staticmethod
     def parse(lines: Iterable[str], instance: Instance):
         lines_iter = parse.remove_comments(lines)
