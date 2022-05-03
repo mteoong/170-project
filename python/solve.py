@@ -17,6 +17,7 @@ from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 from itertools import chain, combinations
 from pulp import *
 from math import *
+from point import Point
 
 
 def solve_naive(instance: Instance) -> Solution:
@@ -32,24 +33,25 @@ def solve_not_naive(instance: Instance) -> Solution:
     for city in instance.cities:
         x = city.x
         y = city.y
-        possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius, instance))
+        possible_loc = possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius, instance))
+    print(possible_loc)
 
-
-    possible_loc_pts = {}
+    possible_loc_pts = set()
     for loc in possible_loc:
+        print(loc)
         possible_loc_pts.add(Point(loc[0], loc[1]))
 
 
 
     #all possible tower placements -> list of tuples
-
+    #print(possible_loc_pts)
 
 
     LP_Prob = LpProblem(name = "problem")
     LP_tower_var = {}
     coverage_var = coverage_functions(possible_loc_pts, instance.cities, instance.coverage_radius, instance)
     penalty_var = coverage_functions(possible_loc_pts, possible_loc_pts, instance.penalty_radius, instance)
-    print(LP_tower_var, coverage_var, penalty_var)
+    #print(LP_tower_var, coverage_var, penalty_var)
 
     #Tower variables
     for tower in possible_loc_pts:
