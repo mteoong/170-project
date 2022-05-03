@@ -16,6 +16,7 @@ from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 #my imports
 from itertools import chain, combinations
 from pulp import *
+from math import *
 
 
 def solve_naive(instance: Instance) -> Solution:
@@ -25,13 +26,13 @@ def solve_naive(instance: Instance) -> Solution:
     )
 
 
-def solve(instance: Instance) -> Solution:
+def solve_not_naive(instance: Instance) -> Solution:
     #parsing possible locations
     possible_loc = set()
     for city in instance.cities:
         x = city.x
         y = city.y
-        possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius))
+        possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius, instance))
 
 
     possible_loc_pts = {}
@@ -46,8 +47,9 @@ def solve(instance: Instance) -> Solution:
 
     LP_Prob = LpProblem(name = "problem")
     LP_tower_var = {}
-    coverage_var = coverage_functions(possible_loc_pts, instance.cities, instance.coverage_radius)
-    penalty_var = coverage_functions(possible_loc_pts, possible_loc_pts, instance.penalty_radius)
+    coverage_var = coverage_functions(possible_loc_pts, instance.cities, instance.coverage_radius, instance)
+    penalty_var = coverage_functions(possible_loc_pts, possible_loc_pts, instance.penalty_radius, instance)
+    print(LP_tower_var, coverage_var, penalty_var)
 
     #Tower variables
     for tower in possible_loc_pts:
@@ -63,12 +65,12 @@ def solve(instance: Instance) -> Solution:
     for tower in possible_loc_pts) >= 1 for city in instance.cities)
 
     LP_Prob.solve()
-    print("Status:", LpStatus[LP_Prob.status])
+    '''print("Status:", LpStatus[LP_Prob.status])
 
     for s in LP_Prob.variables():
         print(s.name, '=', s.varValue)
 
-    print("obj value = ", value(LP_Prob.objective))
+    print("obj value = ", value(LP_Prob.objective))'''
 
 
 
@@ -76,15 +78,15 @@ def solve(instance: Instance) -> Solution:
 
 
 
-def coverage_functions(tower_setting, city_setting, radius):
+def coverage_functions(tower_setting, city_setting, radius, instance):
     '''checks to see if the towers in tower_setting covers all the cities in city_settings'''
     #set of tuples that holds aij = 1 if tower j covers city i
     tower_dict = {}
 
     for city in city_setting:
-        locs = all_points_in_radius(city.x, city.y, radius)
+        locs = all_points_in_radius(city.x, city.y, radius, instance)
         tower_dict[city] = {}
-        for tower in tower_settings:
+        for tower in tower_setting:
             if tower in locs:
                 tower_dict[city][tower] = 1
 
@@ -127,15 +129,15 @@ def coverage_functions(tower_setting, city_setting, radius):
 
 
 
-def all_points_in_radius(x,y, rad):
+def all_points_in_radius(x,y, rad, instance):
     ''' finds all the points in a RAD unit radius around x,y'''
-    possible_loc = set((x,j))
+    possible_loc = set((x,y))
     for i in range(rad + 1):
         for j in range(rad + 1):
             if (sqrt(i^2 + j^2) <= rad):
                 lst = [(x + i,y + j), (x - i, y - j), (x + i, y - j), (x - i, y + j)]
                 for coord in lst:
-                    if (coord[0] >= 0) and (coord[0]< D) and (coord[1]< D) and (coord[1] >= 0):
+                    if (coord[0] >= 0) and (coord[0]< instance.D) and (coord[1]< instance.D) and (coord[1] >= 0):
                         possible_loc.add(coord)
 
     return possible_loc
@@ -148,7 +150,7 @@ def all_points_in_radius(x,y, rad):
 
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive,
-    "actual": solve,
+    "actual": solve_not_naive,
 }
 
 # You shouldn't need to modify anything below this line.
