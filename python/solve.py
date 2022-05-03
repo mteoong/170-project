@@ -15,7 +15,7 @@ from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 
 #my imports
 from itertools import chain, combinations
-import pulp as p 
+from pulp import *
 
 
 def solve_naive(instance: Instance) -> Solution:
@@ -31,9 +31,7 @@ def solve(instance: Instance) -> Solution:
     for city in instance.cities:
         x = city.x
         y = city.y
-        possible_loc.union(all_points_in_radius(x,y))
-
-
+        possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius))
 
 
     possible_loc_pts = {}
@@ -42,20 +40,35 @@ def solve(instance: Instance) -> Solution:
 
 
 
+    #all possible tower placements -> list of tuples
 
 
 
-    #all possible tower placements
-    tower_settings = list(powerset(possible_loc_pts))
+    LP_Prob = LpProblem(name = "problem")
+    LP_tower_var = {}
+    coverage_var = coverage_functions(possible_loc_pts, instance.cities, instance.coverage_radius)
+    penalty_var = coverage_functions(possible_loc_pts, possible_loc_pts, instance.penalty_radius)
 
-    #run LP on all the possible solution sets.
-    for tower_setting in tower_settings:
-        #test whether we cover all cities with our towers
-        if not covers_all(tower_setting, instance.cities):
-            continue
+    #Tower variables
+    for tower in possible_loc_pts:
+        tower_name = 'x' + str(tower.x) + ',y' + str(tower.y)
+        LP_tower_var[tower_name] = LpVariable(name, cat = 'Binary')
 
-        #since we can cover all the cities now we will use these settings to minimize penalty_radius
-        #run LP
+    #objective
+    LP_Prob += lpSum(170 * math.exp(.17* lpSum(penalty_var[tower][tower_two] *  LP_tower_var['x' + str(tower_two.x) + ',y' + str(tower_two.y)]
+    for tower_two in possible_loc_pts) - 1) * LP_tower_var['x' + str(tower.x) + ',y' + str(tower.y)] for tower in possible_loc_pts)
+
+    #constraints
+    LP_Prob += lpSum(lpSum(coverage_var[city][tower] * LP_tower_var['x' + str(tower.x) + ',y' + str(tower.y)]
+    for tower in possible_loc_pts) >= 1 for city in instance.cities)
+
+    LP_Prob.solve()
+    print("Status:", LpStatus[LP_Prob.status])
+
+    for s in LP_Prob.variables():
+        print(s.name, '=', s.varValue)
+
+    print("obj value = ", value(LP_Prob.objective))
 
 
 
@@ -63,27 +76,63 @@ def solve(instance: Instance) -> Solution:
 
 
 
-
-def covers_all(tower_setting, city_setting):
+def coverage_functions(tower_setting, city_setting, radius):
     '''checks to see if the towers in tower_setting covers all the cities in city_settings'''
-    all_reachable_from_tower = set()
-
-    for tower in tower_setting:
-        all_reachable_from_tower.union(all_points_in_radius(tower.x, tower.y))
+    #set of tuples that holds aij = 1 if tower j covers city i
+    tower_dict = {}
 
     for city in city_setting:
-        if not (city in all_reachable_from_tower):
-            return False
+        locs = all_points_in_radius(city.x, city.y, radius)
+        tower_dict[city] = {}
+        for tower in tower_settings:
+            if tower in locs:
+                tower_dict[city][tower] = 1
 
-    return True
+            else:
+                tower_dict[city][tower] = 0
 
 
-def all_points_in_radius(x,y):
-    ''' finds all the points in a 3 unit radius around x,y'''
-    possible_loc = set()
-    for i in range(4):
-        for j in range(4):
-            if (sqrt(i^2 + j^2) <= 3):
+    return tower_dict
+
+
+
+
+
+
+
+
+'''
+
+    lst = set()
+
+    for tower in tower_setting:
+        all_reachable_from_tower.union(all_points_in_radius(tower.x, tower.y, radius)
+
+    for city in instance.cities:
+        locs = all_points_in_radius(city.x, city.y, radius)
+        for tower in tower_setting:
+            if tower in locs:
+                lst.add((tower, 1))
+
+            else:
+                lst.add((tower,0))
+
+
+    return lst'''
+
+
+
+
+
+
+
+
+def all_points_in_radius(x,y, rad):
+    ''' finds all the points in a RAD unit radius around x,y'''
+    possible_loc = set((x,j))
+    for i in range(rad + 1):
+        for j in range(rad + 1):
+            if (sqrt(i^2 + j^2) <= rad):
                 lst = [(x + i,y + j), (x - i, y - j), (x + i, y - j), (x - i, y + j)]
                 for coord in lst:
                     if (coord[0] >= 0) and (coord[0]< D) and (coord[1]< D) and (coord[1] >= 0):
