@@ -14,7 +14,6 @@ from solution import Solution
 from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 #my imports
 from itertools import chain, combinations
-from pulp import *
 from math import *
 from point import Point
 
@@ -56,10 +55,7 @@ def solve_greedy(instance: Instance) -> Solution:
 
                 all_towers.remove(pt_tower)
             all_towers.append(max_tower)
-            print(max_tower.x, max_tower.y)
-            print("line 1")
             decrement(possible_loc, tower_potentials, (max_tower.x, max_tower.y), instance, 3)
-            print("line 2")
 
     return Solution(
         instance=instance,
@@ -79,20 +75,26 @@ def solve_greedy(instance: Instance) -> Solution:
 
 def decrement(possible_loc, tower_potentials, winning_tower,instance, rad):
     '''for each city covered by WINNING_TOWER remove 1 from all towers in WINNING_TOWER Radius'''
-    for city in possible_loc[winning_tower]:
-        x = winning_tower[0]
-        y = winning_tower[1]
+    copy = possible_loc[winning_tower].copy()
+
+    for city in copy:
+        x = city.x
+        y = city.y
         
         for i in range(rad + 1):
             for j in range(rad + 1):
                 if (sqrt(i**2 + j**2) <= rad):
                     lst = [(x + i,y + j), (x - i, y - j), (x + i, y - j), (x - i, y + j), (x,y)]
+                    
                     for coord in lst:
                         if (coord[0] >= 0) and (coord[0]< instance.D) and (coord[1]< instance.D) and (coord[1] >= 0):
                             coord_to_pt = (coord[0], coord[1])
-                            possible_loc[coord_to_pt].remove(city)
+                
+                            if city in possible_loc[coord_to_pt]:
+                                possible_loc[coord_to_pt].remove(city)
                             if coord_to_pt in tower_potentials:
                                 tower_potentials.remove(coord_to_pt)
+
 
    
 
@@ -109,6 +111,8 @@ def max_points(possible_loc):
             maxs = len(possible_loc[point])
             
     return set_of_keys
+
+
         
 def construct_dict(x, y, rad, instance, possible_loc, city):
     ''' constructs the dictionary'''
