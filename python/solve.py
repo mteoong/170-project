@@ -46,7 +46,7 @@ def solve_greedy(instance: Instance) -> Solution:
             max_penalty = -1
             max_tower = None
             for tower in tower_potentials:
-                pt_tower = Point(tower)
+                pt_tower = Point(tower[0],tower[1])
                 all_towers.append(pt_tower)
                 sol = Solution(all_towers, instance)
                 penalty = sol.penalty()
@@ -56,7 +56,10 @@ def solve_greedy(instance: Instance) -> Solution:
 
                 all_towers.remove(pt_tower)
             all_towers.append(max_tower)
+            print(max_tower.x, max_tower.y)
+            print("line 1")
             decrement(possible_loc, tower_potentials, (max_tower.x, max_tower.y), instance, 3)
+            print("line 2")
 
     return Solution(
         instance=instance,
@@ -77,12 +80,12 @@ def solve_greedy(instance: Instance) -> Solution:
 def decrement(possible_loc, tower_potentials, winning_tower,instance, rad):
     '''for each city covered by WINNING_TOWER remove 1 from all towers in WINNING_TOWER Radius'''
     for city in possible_loc[winning_tower]:
-        x = city.x
-        y = city.y
+        x = winning_tower[0]
+        y = winning_tower[1]
         
         for i in range(rad + 1):
             for j in range(rad + 1):
-                if (sqrt(i^2 + j^2) <= rad):
+                if (sqrt(i**2 + j**2) <= rad):
                     lst = [(x + i,y + j), (x - i, y - j), (x + i, y - j), (x - i, y + j), (x,y)]
                     for coord in lst:
                         if (coord[0] >= 0) and (coord[0]< instance.D) and (coord[1]< instance.D) and (coord[1] >= 0):
@@ -107,15 +110,12 @@ def max_points(possible_loc):
             
     return set_of_keys
         
-
-        
-
 def construct_dict(x, y, rad, instance, possible_loc, city):
     ''' constructs the dictionary'''
 
     for i in range(rad + 1):
         for j in range(rad + 1):
-            if (sqrt(i^2 + j^2) <= rad):
+            if (sqrt(i**2 + j**2) <= rad):
                 lst = [(x + i,y + j), (x - i, y - j), (x + i, y - j), (x - i, y + j), (x,y)]
                 for coord in lst:
                     if (coord[0] >= 0) and (coord[0]< instance.D) and (coord[1]< instance.D) and (coord[1] >= 0):
