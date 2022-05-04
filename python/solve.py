@@ -34,11 +34,11 @@ def solve_not_naive(instance: Instance) -> Solution:
         x = city.x
         y = city.y
         possible_loc = possible_loc.union(all_points_in_radius(x,y, instance.coverage_radius, instance))
-    print(possible_loc)
+
 
     possible_loc_pts = set()
     for loc in possible_loc:
-        print(loc)
+        #print(loc)
         possible_loc_pts.add(Point(loc[0], loc[1]))
 
 
@@ -47,19 +47,19 @@ def solve_not_naive(instance: Instance) -> Solution:
     #print(possible_loc_pts)
 
 
-    LP_Prob = LpProblem(name = "problem")
+    LP_Prob = LpProblem("problem")
     LP_tower_var = {}
     coverage_var = coverage_functions(possible_loc_pts, instance.cities, instance.coverage_radius, instance)
     penalty_var = coverage_functions(possible_loc_pts, possible_loc_pts, instance.penalty_radius, instance)
-    #print(LP_tower_var, coverage_var, penalty_var)
+    print(LP_tower_var, coverage_var, penalty_var)
 
     #Tower variables
     for tower in possible_loc_pts:
         tower_name = 'x' + str(tower.x) + ',y' + str(tower.y)
-        LP_tower_var[tower_name] = LpVariable(name, cat = 'Binary')
+        LP_tower_var[tower_name] = LpVariable(tower_name, cat = 'Binary')
 
     #objective
-    LP_Prob += lpSum(170 * math.exp(.17* lpSum(penalty_var[tower][tower_two] *  LP_tower_var['x' + str(tower_two.x) + ',y' + str(tower_two.y)]
+    LP_Prob += lpSum(170 * exp(.17* lpSum(penalty_var[tower][tower_two] *  LP_tower_var['x' + str(tower_two.x) + ',y' + str(tower_two.y)]
     for tower_two in possible_loc_pts) - 1) * LP_tower_var['x' + str(tower.x) + ',y' + str(tower.y)] for tower in possible_loc_pts)
 
     #constraints
@@ -133,7 +133,8 @@ def coverage_functions(tower_setting, city_setting, radius, instance):
 
 def all_points_in_radius(x,y, rad, instance):
     ''' finds all the points in a RAD unit radius around x,y'''
-    possible_loc = set((x,y))
+    possible_loc = set()
+    possible_loc.add((x,y))
     for i in range(rad + 1):
         for j in range(rad + 1):
             if (sqrt(i^2 + j^2) <= rad):
