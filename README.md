@@ -7,8 +7,6 @@ skeleton was developed using Python 3.9, but it should work with Python
 versions 3.6+.
 
 ## Usage
-Run solve_all.py with the command: python3 python/solve_all.py inputs outputs
-
 
 ### Generating instances
 
